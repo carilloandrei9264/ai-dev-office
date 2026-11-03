@@ -119,8 +119,8 @@ class LoaderAndAgents(unittest.TestCase):
     def test_plan_sections(self):
         from office.skill_loader import plan_sections
         sections = plan_sections()
-        self.assertEqual(len(sections), 6)
-        self.assertEqual(sections[0], "Project Overview")
+        self.assertEqual(len(sections), 7)
+        self.assertEqual(sections[:2], ["Project Overview", "Requirements & Acceptance Criteria"])
 
 
 class Tools(unittest.TestCase):
@@ -268,7 +268,8 @@ class Pipeline(unittest.TestCase):
         finally:
             self.pl.run_stage = orig
         writer = [d for role, d in seen if role == AGENT_SPECS["writer"]["role"]][0]
-        self.assertIn("6. Potential Challenges & Solutions", writer)
+        self.assertIn("7. Potential Challenges & Solutions", writer)
+        self.assertIn("2. Requirements & Acceptance Criteria", writer)
 
     def test_friendly_errors(self):
         fe = self.pl.friendly_error

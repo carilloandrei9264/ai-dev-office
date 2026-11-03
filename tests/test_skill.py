@@ -89,16 +89,51 @@ class RepoTests(unittest.TestCase):
             self.assertIn(f"references/advisors/{name}.md", text)
         self.assertTrue(text.rstrip().endswith("MY PROJECT:"))
 
-    def test_install_roundtrip_and_backup(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            self.assertEqual(run(ROOT / "scripts" / "install.py", "--dest", tmp).returncode, 0)
+    def test_web_prompts_exist_for_every_stack_and_are_complete(self):
+        stacks = sorted(p.stem for p in (SKILL / "references" / "stacks").glob("*.md"))
+        self.assertGreaterEqual(len(stacks), 5)
+        for sid in stacks + ["generic"]:
+            path = ROOT / "prompts" / f"web-{sid}.md"
+            self.assertTrue(path.exists(), sid)
+            text = path.read_text(encoding="utf-8")
+            for part in ("references/sdlc.md", "references/workflows/build.md", "references/workflows/ship.md",
+                         "references/workflows/maintain.md", "references/web-quality.md", "references/advisors/sec.md"):
+                self.assertIn(f"`{part}`", text, f"{sid}: {part}")
+            self.assertIn("Problem (who has it", text)
+            self.assertIn("never claim you ran", text.lower())
+            if sid != "generic":
+                self.assertIn(f"references/stacks/{sid}.md", text)
+                others = [o for o in stacks if o != sid]
+                self.assertFalse(any(f"references/stacks/{o}.md" in text for o in others), "only its own stack notes are included")
+        self.assertTrue((ROOT / "PROMPT.md").read_text(encoding="utf-8").rstrip().endswith("MY PROJECT:"))
+
+    def test_install_roundtrip_and_backup_outside_skills_folder(self):
+        import os
+        with tempfile.TemporaryDirectory() as tmp, tempfile.TemporaryDirectory() as home:
+            env = dict(os.environ, AI_DEV_OFFICE_HOME=home)
+            def go(*a):
+                return subprocess.run([sys.executable, str(ROOT / "scripts" / "install.py"), *a], capture_output=True, text=True, env=env, timeout=60)
+            self.assertEqual(go("--dest", tmp).returncode, 0)
             self.assertFalse((Path(tmp) / "ai-dev-office").exists(), "preview must not install")
-            self.assertEqual(run(ROOT / "scripts" / "install.py", "--dest", tmp, "--apply").returncode, 0)
+            self.assertEqual(go("--dest", tmp, "--apply").returncode, 0)
             installed = Path(tmp) / "ai-dev-office"
             self.assertTrue((installed / "SKILL.md").exists())
             self.assertEqual(run(ROOT / "scripts" / "doctor.py", "--path", installed).returncode, 0)
-            self.assertEqual(run(ROOT / "scripts" / "install.py", "--dest", tmp, "--apply").returncode, 0)
-            self.assertEqual(len(list(Path(tmp).glob("ai-dev-office.bak-*"))), 1)
+            self.assertEqual(go("--dest", tmp, "--apply").returncode, 0)
+            self.assertEqual(len(list((Path(home) / "backups").glob("ai-dev-office-*"))), 1)
+            self.assertEqual([p.name for p in Path(tmp).iterdir()], ["ai-dev-office"], "no stray folders (a second SKILL.md would confuse assistants)")
+
+    def test_install_with_unreviewed_profile_is_refused_but_own_skill_installs(self):
+        import os
+        with tempfile.TemporaryDirectory() as tmp, tempfile.TemporaryDirectory() as home:
+            env = dict(os.environ, AI_DEV_OFFICE_HOME=home)
+            r = subprocess.run([sys.executable, str(ROOT / "scripts" / "install.py"), "--dest", tmp, "--profile", "core", "--apply"],
+                               capture_output=True, text=True, env=env, timeout=60)
+            lock = __import__("json").loads((ROOT / "dependencies.lock.json").read_text(encoding="utf-8"))
+            if any(not p.get("reviewed") for p in lock["packages"] if "core" in p["profiles"]):
+                self.assertEqual(r.returncode, 2)
+                self.assertIn("Refusing", r.stdout)
+                self.assertEqual([p.name for p in Path(tmp).iterdir()], ["ai-dev-office"])
 
     def test_doctor_detects_a_broken_skill(self):
         with tempfile.TemporaryDirectory() as tmp:

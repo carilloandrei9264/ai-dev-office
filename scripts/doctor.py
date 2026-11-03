@@ -9,13 +9,15 @@ Exit code 1 if anything FAILs. WARN does not fail.
 import re
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 KNOWN_TOOLS = {"web_search", "read_webpage", "check_color_contrast", "validate_sql_schema", "security_checklist"}
 ADVISOR_FIELDS = ["id", "order", "label", "section", "role", "goal", "tools", "when", "keywords"]
 ROLE_FIELDS = ["id", "role", "goal"]
-SKILL_BODY_WARN_BYTES = 12_000
+SKILL_BODY_WARN_BYTES = 6_000   # the always-loaded router; workflows load on demand
+WORKFLOW_WARN_BYTES = 8_000
 
 results = []  # (level, message)
 
@@ -51,11 +53,53 @@ def run(skill: Path, repo_mode: bool):
     size = len(body.encode("utf-8"))
     (warn if size > SKILL_BODY_WARN_BYTES else ok)(f"SKILL.md body is {size / 1024:.1f} KB (keep it compact)")
 
+    # modes and workflows
+    workflows = {}
+    for name in ("plan", "build", "ship", "maintain"):
+        path = skill / "references" / "workflows" / f"{name}.md"
+        if path.exists():
+            workflows[name] = read_text(path)
+            size = len(workflows[name].encode("utf-8"))
+            (warn if size > WORKFLOW_WARN_BYTES else ok)(f"workflows/{name}.md is {size / 1024:.1f} KB")
+            if f"references/workflows/{name}.md" not in body:
+                fail(f"SKILL.md does not point to workflows/{name}.md")
+        else:
+            fail(f"references/workflows/{name}.md missing")
+    for tmpl in ("PROJECT.md", "STATUS.md"):
+        (ok if (skill / "templates" / tmpl).exists() else fail)(f"templates/{tmpl}")
+    for extra in ("fallbacks.md", "sdlc.md", "web-quality.md"):
+        (ok if (skill / "references" / extra).exists() else fail)(f"references/{extra}")
+
+    # stack notes
+    stack_ids = []
+    for path in sorted((skill / "references" / "stacks").glob("*.md")):
+        m, b = parse_frontmatter(read_text(path))
+        sections = split_sections(b)
+        bad = [f for f in ("id", "name") if not m.get(f)]
+        bad += [f"## {h}" for h in ("Commands", "Start", "Conventions", "Security", "Testing") if not sections.get(h)]
+        labels = [l.strip()[1:].split(":", 1)[0].strip() for l in sections.get("Commands", "").splitlines() if l.strip().startswith("-")]
+        bad += [f"command '{c}'" for c in ("Run", "Test", "Lint / types", "Build") if c not in labels]
+        if m.get("id") != path.stem:
+            bad.append("id must match the file name")
+        if bad:
+            fail(f"stacks/{path.name}: missing {', '.join(bad)}")
+            continue
+        if f"`{m['id']}`" not in workflows.get("build", ""):
+            fail(f"stack '{m['id']}' is not named in build.md")
+            continue
+        ok(f"stack {m['id']}")
+        stack_ids.append(m["id"])
+    if not stack_ids:
+        fail("no stack notes found")
+    est = (len(body) + len(workflows.get("build", ""))) // 4
+    ok(f"typical build session loads about {est} tokens of instructions up front (rough estimate: characters / 4)")
+
     # every referenced path exists
-    referenced = set(re.findall(r"`((?:references|scripts)/[\w./-]+)`", body))
+    referenced = set()
+    for text in [body, *workflows.values()]:
+        referenced |= set(re.findall(r"`((?:references|scripts|templates)/[\w./-]+)`", text))
     missing = sorted(r for r in referenced if not (skill / r).exists() and not re.search(r"[<>*]", r))
-    # example arguments such as schema.sql are not paths under references/scripts, so only real prefixes are checked
-    (fail if missing else ok)("files referenced in SKILL.md: " + (", ".join(missing) + " missing" if missing else f"{len(referenced)} found"))
+    (fail if missing else ok)("files referenced in the skill: " + (", ".join(missing) + " missing" if missing else f"{len(referenced)} found"))
 
     # roles
     for name in ["researcher", "writer", "router", "reviewer"]:
@@ -96,8 +140,9 @@ def run(skill: Path, repo_mode: bool):
         bad_tools = [t for t in csv(m["tools"]) if t not in KNOWN_TOOLS]
         if bad_tools:
             fail(f"advisors/{path.name}: unknown tools {bad_tools}")
-        if f"`{m['id']}`" not in body or f"references/advisors/{path.name}" not in body:
-            fail(f"advisor '{m['id']}' is not listed in the SKILL.md routing table")
+        plan_text = workflows.get("plan", "")
+        if f"`{m['id']}`" not in plan_text or f"references/advisors/{path.name}" not in plan_text:
+            fail(f"advisor '{m['id']}' is not listed in the plan.md routing table")
         else:
             ok(f"advisor {m['id']}")
         ids.append(m["id"])
@@ -123,6 +168,38 @@ def run(skill: Path, repo_mode: bool):
 
     script("contrast.py", ["#000000", "#ffffff"], expect="21.00:1")
     script("sql_check.py", [], stdin="CREATE TABLE t(id INTEGER PRIMARY KEY);", expect="Valid SQL")
+    script("secrets_scan.py", ["--root", str(skill / "templates")], expect="Nothing found")
+    with tempfile.TemporaryDirectory() as tmp:
+        ctx = skill / "scripts" / "ctx.py"
+        r1 = subprocess.run([sys.executable, str(ctx), "--root", tmp, "init"], capture_output=True, text=True, timeout=30)
+        r2 = subprocess.run([sys.executable, str(ctx), "--root", tmp, "resume"], capture_output=True, text=True, timeout=30)
+        good = r1.returncode == 0 and r2.returncode == 0 and "no slices yet" in r2.stdout
+        (ok if good else fail)("scripts/ctx.py init and resume work" + ("" if good else f" ({(r1.stdout + r1.stderr + r2.stdout + r2.stderr).strip()[:100]})"))
+
+    # build-mode routing table only names skills that exist in the lock
+    if repo_mode:
+        import json
+        sys.path.insert(0, str(ROOT / "scripts"))
+        import skills as skills_mod
+        lock = json.loads(read_text(ROOT / "dependencies.lock.json"))
+        problems = skills_mod.lock_problems(lock)
+        (fail if problems else ok)("dependencies.lock.json: " + ("; ".join(problems[:3]) if problems else f"{len(lock['packages'])} packages valid"))
+        names = {s["name"] for p in lock["packages"] for s in p["skills"]}
+        route = workflows.get("build", "")
+        route = route[route.find("## 3."):route.find("## 4.")]
+        used = set()
+        for line in route.splitlines():
+            cells = [c.strip() for c in line.strip().strip("|").split("|")]
+            if line.startswith("|") and len(cells) >= 2:
+                used |= {t for t in re.findall(r"`([^`]+)`", cells[1]) if re.fullmatch(r"[a-z0-9]+(-[a-z0-9]+)+|ponytail|caveman|humanizer|impeccable|prototype", t)}
+        unknown = sorted(u for u in used if u not in names)
+        (fail if unknown else ok)("build.md routing names exist in the lock" + (f": unknown {unknown}" if unknown else f" ({len(used)} skills)"))
+        credits = read_text(ROOT / "CREDITS.md")
+        absent = [p["repo"] for p in lock["packages"] if p["repo"] not in credits]
+        (fail if absent else ok)("CREDITS.md lists every repository" + (f": missing {absent}" if absent else ""))
+        unrev = [p["id"] for p in lock["packages"] if not p.get("reviewed")]
+        if unrev:
+            warn(f"{len(unrev)} helper package(s) are not reviewed yet (maintainer: skills.py review / approve)")
 
     if repo_mode:
         r = subprocess.run([sys.executable, str(ROOT / "scripts" / "build_prompt.py"), "--check"], capture_output=True, text=True)

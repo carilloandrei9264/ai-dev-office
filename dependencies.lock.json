@@ -1,0 +1,369 @@
+{
+  "schema_version": 1,
+  "provenance": "Repositories, commit pins, licenses and skill paths were copied on 2026-11-03 from the public dependencies.lock.json of github.com/generosomm/universal-web-dev. This project has NOT reviewed them: every package is marked reviewed=false and the installer refuses them until a maintainer runs `skills.py review <id>` and `skills.py approve <id>`.",
+  "packages": [
+    {
+      "id": "superpowers",
+      "profiles": [
+        "core"
+      ],
+      "repo": "obra/superpowers",
+      "ref": "2ce8aa15d05bd57213e6f746f953aafb7ded7a8b",
+      "license": "MIT",
+      "license_files": [
+        "LICENSE"
+      ],
+      "skills": [
+        {
+          "name": "executing-plans",
+          "path": "skills/executing-plans"
+        },
+        {
+          "name": "subagent-driven-development",
+          "path": "skills/subagent-driven-development"
+        },
+        {
+          "name": "dispatching-parallel-agents",
+          "path": "skills/dispatching-parallel-agents"
+        },
+        {
+          "name": "test-driven-development",
+          "path": "skills/test-driven-development"
+        },
+        {
+          "name": "systematic-debugging",
+          "path": "skills/systematic-debugging"
+        },
+        {
+          "name": "verification-before-completion",
+          "path": "skills/verification-before-completion"
+        },
+        {
+          "name": "requesting-code-review",
+          "path": "skills/requesting-code-review"
+        },
+        {
+          "name": "receiving-code-review",
+          "path": "skills/receiving-code-review"
+        },
+        {
+          "name": "using-git-worktrees",
+          "path": "skills/using-git-worktrees"
+        },
+        {
+          "name": "finishing-a-development-branch",
+          "path": "skills/finishing-a-development-branch"
+        }
+      ],
+      "reviewed": false,
+      "note": "Subset only. Left out on purpose: using-superpowers (a second router), brainstorming and writing-plans (plan mode covers them), writing-skills. Some included skills may refer to the omitted ones by name."
+    },
+    {
+      "id": "ponytail",
+      "profiles": [
+        "core"
+      ],
+      "repo": "DietrichGebert/ponytail",
+      "ref": "09c434ab73ca43761c5d8b0c5d341926c2fba710",
+      "license": "MIT",
+      "license_files": [
+        "LICENSE"
+      ],
+      "skills": [
+        {
+          "name": "ponytail",
+          "path": "skills/ponytail"
+        }
+      ],
+      "reviewed": false
+    },
+    {
+      "id": "humanizer",
+      "profiles": [
+        "web"
+      ],
+      "repo": "blader/humanizer",
+      "ref": "8c307f367c91bd974002f10f2be2965d642c13df",
+      "license": "MIT",
+      "license_files": [
+        "LICENSE"
+      ],
+      "skills": [
+        {
+          "name": "humanizer",
+          "path": ".",
+          "exclude": [
+            ".claude-plugin",
+            ".cursor-plugin",
+            ".github",
+            "AGENTS.md",
+            "CHANGELOG.md",
+            "README.md",
+            "scripts"
+          ]
+        }
+      ],
+      "reviewed": false
+    },
+    {
+      "id": "caveman",
+      "profiles": [
+        "lean"
+      ],
+      "repo": "JuliusBrussee/caveman",
+      "ref": "9b68f7ed12b05e7efaff18e65c5a3fc2849fd0a4",
+      "license": "Apache-2.0; retained MIT notices for pre-3.0 contributions",
+      "license_files": [
+        "LICENSE",
+        "LICENSE-MIT",
+        "NOTICE",
+        "LICENSING.md"
+      ],
+      "skills": [
+        {
+          "name": "caveman",
+          "path": "skills/caveman"
+        }
+      ],
+      "reviewed": false
+    },
+    {
+      "id": "frontend-design",
+      "profiles": [
+        "web"
+      ],
+      "repo": "anthropics/skills",
+      "ref": "dbd4588f9e1033efb41dad4bef2f7947c8993d44",
+      "license": "Apache-2.0 for skills/frontend-design only",
+      "license_files": [
+        "skills/frontend-design/LICENSE.txt"
+      ],
+      "skills": [
+        {
+          "name": "frontend-design",
+          "path": "skills/frontend-design"
+        }
+      ],
+      "reviewed": false
+    },
+    {
+      "id": "taste-skill",
+      "profiles": [
+        "web"
+      ],
+      "repo": "Leonxlnx/taste-skill",
+      "ref": "12af471f627f866411b4bd785b19646d3672784c",
+      "license": "MIT",
+      "license_files": [
+        "LICENSE"
+      ],
+      "skills": [
+        {
+          "name": "design-taste-frontend",
+          "path": "skills/taste-skill"
+        }
+      ],
+      "reviewed": false
+    },
+    {
+      "id": "ui-ux-pro-max",
+      "profiles": [
+        "web"
+      ],
+      "repo": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "ref": "9a3f14f7423037ccb8feeb4fee7482291b9c820e",
+      "license": "MIT for repository code and guidance; preserve bundled data provenance and font metadata notices",
+      "license_files": [
+        "LICENSE"
+      ],
+      "skills": [
+        {
+          "name": "ui-ux-pro-max",
+          "path": ".claude/skills/ui-ux-pro-max"
+        }
+      ],
+      "reviewed": false
+    },
+    {
+      "id": "emil-skills",
+      "profiles": [
+        "web"
+      ],
+      "repo": "emilkowalski/skills",
+      "ref": "2d228630ba1446365f614a108cb8252f1feda202",
+      "license": "MIT",
+      "license_files": [
+        "LICENSE"
+      ],
+      "skills": [
+        {
+          "name": "emil-design-eng",
+          "path": "skills/emil-design-eng"
+        },
+        {
+          "name": "break-ui",
+          "path": "skills/break-ui"
+        },
+        {
+          "name": "mobile-native",
+          "path": "skills/mobile-native"
+        },
+        {
+          "name": "prototype",
+          "path": "skills/prototype"
+        },
+        {
+          "name": "pick-ui-library",
+          "path": "skills/pick-ui-library"
+        }
+      ],
+      "reviewed": false
+    },
+    {
+      "id": "impeccable",
+      "profiles": [
+        "web"
+      ],
+      "repo": "pbakaus/impeccable",
+      "ref": "d34c87e1a00989ae8dbdd7f6b30b70f23319e860",
+      "license": "Apache-2.0; NOTICE.md attributes MIT-derived platform references",
+      "license_files": [
+        "LICENSE",
+        "NOTICE.md"
+      ],
+      "skills": [
+        {
+          "name": "impeccable",
+          "path": ".agents/skills/impeccable",
+          "required_files": [
+            "scripts/impeccable",
+            "scripts/impeccable.cmd",
+            "scripts/VERSION",
+            "scripts/engine-checksums.txt"
+          ]
+        }
+      ],
+      "reviewed": false,
+      "note": "Ships launcher scripts that can download and run an engine on first use. This installer copies files only and never runs them; review the scripts before approving."
+    },
+    {
+      "id": "webapp-testing",
+      "profiles": [
+        "web"
+      ],
+      "repo": "anthropics/skills",
+      "ref": "dbd4588f9e1033efb41dad4bef2f7947c8993d44",
+      "license": "Apache-2.0 for skills/webapp-testing only",
+      "license_files": [
+        "skills/webapp-testing/LICENSE.txt"
+      ],
+      "skills": [
+        {
+          "name": "webapp-testing",
+          "path": "skills/webapp-testing"
+        }
+      ],
+      "reviewed": false,
+      "note": "Needs Python Playwright to drive a browser; without it the browser check cannot run."
+    },
+    {
+      "id": "web-quality-skills",
+      "profiles": [
+        "web"
+      ],
+      "repo": "addyosmani/web-quality-skills",
+      "ref": "afa8da942115f2961fdbfa80807ea0b232ff6c00",
+      "license": "MIT",
+      "license_files": [
+        "LICENSE"
+      ],
+      "skills": [
+        {
+          "name": "performance",
+          "path": "skills/performance"
+        },
+        {
+          "name": "core-web-vitals",
+          "path": "skills/core-web-vitals"
+        }
+      ],
+      "reviewed": false
+    },
+    {
+      "id": "seo-aeo-best-practices",
+      "profiles": [
+        "web"
+      ],
+      "repo": "sanity-io/agent-toolkit",
+      "ref": "571a2d077554bd1272f31c345ecb7719889e7957",
+      "license": "MIT",
+      "license_files": [
+        "LICENSE"
+      ],
+      "skills": [
+        {
+          "name": "seo-aeo-best-practices",
+          "path": "skills/seo-aeo-best-practices"
+        }
+      ],
+      "reviewed": false
+    },
+    {
+      "id": "api-design-principles",
+      "profiles": [
+        "backend"
+      ],
+      "repo": "wshobson/agents",
+      "ref": "0874a27b17a22e2b7c2e2bcd725768e0803cad06",
+      "license": "MIT",
+      "license_files": [
+        "LICENSE"
+      ],
+      "skills": [
+        {
+          "name": "api-design-principles",
+          "path": "plugins/backend-development/skills/api-design-principles"
+        }
+      ],
+      "reviewed": false
+    },
+    {
+      "id": "security-best-practices",
+      "profiles": [
+        "backend"
+      ],
+      "repo": "openai/skills",
+      "ref": "49f948faa9258a0c61caceaf225e179651397431",
+      "license": "Apache-2.0 for skills/.curated/security-best-practices only",
+      "license_files": [
+        "skills/.curated/security-best-practices/LICENSE.txt"
+      ],
+      "skills": [
+        {
+          "name": "security-best-practices",
+          "path": "skills/.curated/security-best-practices"
+        }
+      ],
+      "reviewed": false
+    },
+    {
+      "id": "supabase-postgres-best-practices",
+      "profiles": [
+        "postgres"
+      ],
+      "repo": "supabase/agent-skills",
+      "ref": "c9be0e931b7930f7d02126d04774d904c381e7d7",
+      "license": "MIT",
+      "license_files": [
+        "LICENSE"
+      ],
+      "skills": [
+        {
+          "name": "supabase-postgres-best-practices",
+          "path": "skills/supabase-postgres-best-practices"
+        }
+      ],
+      "reviewed": false
+    }
+  ]
+}

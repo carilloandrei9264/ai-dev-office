@@ -14,4 +14,5 @@ jobs:
           python-version: ${{ matrix.python }}
       - run: python scripts/doctor.py
       - run: python -m unittest discover -s tests
+      - run: python scripts/skills.py list
       - run: python -m compileall -q app scripts skill/scripts

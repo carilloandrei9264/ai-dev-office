@@ -1,0 +1,9 @@
+# Install with: pip install -r requirements.txt
+# Versions are left unpinned on purpose: pin the ones that work for you with `pip freeze` once the app runs.
+streamlit
+crewai
+litellm
+python-dotenv
+fpdf2
+ddgs
+requests
